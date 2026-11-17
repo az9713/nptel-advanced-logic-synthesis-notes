@@ -17,6 +17,8 @@ def mos():
     assert isclose(current(0.2), 20)
     assert isclose(current(overdrive), 36)
     assert isclose(current(1.0), current(overdrive))
+    body_shift = 0.4 * (sqrt(0.6 + 0.3) - sqrt(0.6))
+    assert isclose(body_shift, 0.0696346515236)
     print("MOS current: 20 uA at 0.2 V, 36 uA in ideal saturation")
 
 
@@ -41,6 +43,9 @@ def sizing():
     assert isclose(delay, 14.313708499)
     assert 3 * (64 ** (1 / 3) + 1) < 5 * (64 ** (1 / 5) + 1)
     assert isclose(1 / (1 + 0.5), 2 / 3)
+    decoder_effort = (6 / 3) * 8 * (32 * 3 / 10)
+    assert isclose(decoder_effort, 153.6)
+    assert round(3 * decoder_effort ** (1 / 3) + 6, 2) == 22.07
     print(f"Logical effort: stage effort {effort:.3f}, normalized delay {delay:.3f}")
 
 
@@ -121,6 +126,11 @@ def equivalence():
     def next_result(reset, enable, state, value):
         return 0 if reset else value if enable else state
 
+    def gated_result(reset, enable, state, value):
+        # Model behavior at the edge after a stable request, with scan inactive.
+        pulse_passed = reset or enable
+        return (0 if reset else value) if pulse_passed else state
+
     for a, b, reset, enable in product((0, 1), repeat=4):
         for x, y, z in product((0, 1, 17, 127, 250, 255), repeat=3):
             select = a & b
@@ -130,6 +140,8 @@ def equivalence():
                 assert next_result(reset, enable, state, shared) == next_result(
                     reset, enable, state, duplicated
                 )
+    for reset, enable in product((0, 1), repeat=2):
+        assert gated_result(reset, enable, 26, 13) == next_result(reset, enable, 26, 13)
     assert (9 + 4, 9 + 7) == (13, 16)
     assert next_result(1, 0, 26, 13) == 0
     print("Equivalence: bounded input grid passed; reversed select yields 13 vs 16")

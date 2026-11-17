@@ -18,6 +18,7 @@ Run `python tools/check.py` for source and link validation. Add `--browser "C:/P
 
 ## Verification results
 
-- The 34 transcript endpoints are within 13 seconds of the playlist durations. The inventory validator checked each transcript hash and the 87 timestamp pointers.
+- The technical review compared all 11 chapters with the transcript material for all 34 recordings. The revisions expand device and latch models, the decoder sizing example, synthesis and timing lab procedures, variation and noise, and formal verification. The clock-gating example now preserves synchronous reset when write enable is low.
+- The 34 transcript endpoints are within 13 seconds of the playlist durations. The inventory validator checked each local transcript hash and the 155 timestamp pointers. The commercial lab review used transcript evidence.
 - The 14 reader pages loaded at 1440 px and 390 px with network access to external assets disabled. Chapter navigation, local links, and equation rendering passed.
 - All ten Python lab checks passed. Separate ngspice measurements reproduced the RC crossing and slew. Yosys proved the eight matched result bits and the reset base case for the mapped slice, proved the selector relocation, and confirmed the injected mismatch.
