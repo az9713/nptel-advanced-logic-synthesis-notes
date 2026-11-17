@@ -3,6 +3,7 @@
 import argparse
 import csv
 import hashlib
+import json
 from html.parser import HTMLParser
 from pathlib import Path
 import re
@@ -57,14 +58,23 @@ def check_transcript(row, anchors):
     origin = row["transcript_source"]
     tag = origin.split()[-1] if origin.startswith("YouTube ") else "asr"
     raw = folder / f"{prefix}.{tag}.json3"
-    assert hashlib.sha256(raw.read_bytes()).hexdigest() == row["sha256"], raw
+    data = raw.read_bytes()
+    assert hashlib.sha256(data).hexdigest() == row["sha256"], raw
     local = folder / f"{prefix}.txt"
     cues = [int(m) * 60 + int(s) for m, s in re.findall(
         r"^\[(\d+):(\d{2})\]", local.read_text(encoding="utf-8"), flags=re.M
     )]
     assert cues and cues == sorted(cues), local
+    speech = [
+        (event["tStartMs"], event["tStartMs"] + event.get("dDurationMs", 0))
+        for event in json.loads(data)["events"]
+        if any(piece["utf8"].strip() for piece in event.get("segs", []))
+    ]
     for _, _, seconds, _ in anchors:
-        assert min(abs(cue - seconds) for cue in cues) <= 12, (prefix, seconds)
+        # Visual anchors may land in the middle of a long ASR segment.
+        timestamp_ms = 1000 * seconds
+        assert any(start - 12_000 <= timestamp_ms <= end + 12_000
+                   for start, end in speech), (prefix, seconds)
 
 
 def verify_links(pages):

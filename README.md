@@ -4,13 +4,13 @@ Open the [GitHub Pages reader](https://az9713.github.io/nptel-advanced-logic-syn
 
 The [inventory](lecture-inventory.csv) records the English track used for each recording, its endpoint, and its SHA-256 digest. Recordings 22, 24, and 31 use local speech recognition after YouTube rate-limited their English captions. Technical spellings and equations in the notes follow the circuit derivations and cited primary references.
 
-The worked execution slice and numerical inputs are original teaching examples. The course's Design Compiler, PrimeTime, and Formality demonstrations provide the procedural context. The executable checks use Python, ngspice, and Yosys. The source review used transcript cues, including speech recognition from the three fallback audio tracks. Slide frames and commercial tool sessions were outside the verification.
+The worked execution slice is an original teaching example. Examples recovered from lecture slides, annotations, and tool reports are marked in the chapters with timestamps. The course's Design Compiler, PrimeTime, and Formality demonstrations provide the procedural context. The executable checks use Python, ngspice, and Yosys.
 
 ## Rebuild and verify
 
 Run `python -m pip install -r requirements.txt` and `python tools/build.py` from this directory. The reader uses a bundled MathJax distribution under the [Apache License](assets/mathjax-LICENSE), so its equations render offline. Recording links open the original videos online.
 
-`python tools/figures.py` regenerates the two model plots with Matplotlib.
+`python tools/figures.py` regenerates the model figures with Matplotlib.
 
 Run `python code/lab.py all` for the deterministic numerical checks. See [the laboratory instructions](code/README.md) for the ngspice and Yosys examples.
 
@@ -19,6 +19,7 @@ Run `python tools/check.py` for source and link validation. Add `--browser "C:/P
 ## Verification results
 
 - The technical review compared all 11 chapters with the transcript material for all 34 recordings. The revisions expand device and latch models, the decoder sizing example, synthesis and timing lab procedures, variation and noise, and formal verification. The clock-gating example now preserves synchronous reset when write enable is low.
-- The 34 transcript endpoints are within 13 seconds of the playlist durations. The inventory validator checked each local transcript hash and the 155 timestamp pointers. The commercial lab review used transcript evidence.
+- The visual review compared all 11 chapters with sampled frames from all 34 recordings, with additional frames for selected annotated diagrams and reports. The published figures are original redrawings and plots. The commercial tool demonstrations were inspected on screen.
+- The 34 transcript endpoints are within 13 seconds of the playlist durations. The inventory validator checks the timestamp pointers and can also check local transcript hashes.
 - The 14 reader pages loaded at 1440 px and 390 px with network access to external assets disabled. Chapter navigation, local links, and equation rendering passed.
 - All ten Python lab checks passed. Separate ngspice measurements reproduced the RC crossing and slew. Yosys proved the eight matched result bits and the reset base case for the mapped slice, proved the selector relocation, and confirmed the injected mismatch.

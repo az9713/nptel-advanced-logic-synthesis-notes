@@ -27,6 +27,13 @@ def cmos():
         pull_down = (a and b) or c
         pull_up = (not a or not b) and not c
         assert pull_up != pull_down
+    for a, b, c, d in product((False, True), repeat=4):
+        pull_down = (a and b) or (c and d)
+        pull_up = (not a or not b) and (not c or not d)
+        assert pull_up != pull_down
+    output_v = 0.35 - sqrt(0.10)
+    assert 0 < output_v < 0.35 and 1 - output_v > 0.15
+    assert isclose(0.35 * output_v - output_v**2 / 2, 0.15**2 / 2)
     tau = 2 * 20  # kilohms times femtofarads gives picoseconds
     crossing, slew = tau * log(2), tau * log(9)
     assert isclose(crossing, 27.7258872224)
@@ -80,6 +87,10 @@ def datapath():
         parity = a ^ b ^ c
         majority = (a & b) | (a & c) | (b & c)
         assert parity + (majority << 1) == a + b + c
+    for x in range(256):
+        times_105 = (x << 6) + (x << 5) + (x << 3) + x
+        assert times_105 == 105 * x
+        assert times_105 + (x << 9) + (x << 2) == 621 * x
     clock_switching = 40e-15 * 0.8**2 * 1e9
     assert isclose(0.25 * clock_switching, 6.4e-6)
     print("Datapath: 4,096 carry-save identities; gated branch uses 6.4 uW")
@@ -119,6 +130,11 @@ def variation():
     spreads = [sqrt(6**2 + 8**2 + 2 * rho * 6 * 8) for rho in (0, 0.5, 1)]
     assert spreads == [10, sqrt(148), 14]
     assert isclose(NormalDist().cdf(3)**2, 0.9973020262)
+    hold_slack = 0.85 * 0.9 + 1.7 * 0.9 - 1.0 * 1.2 - 1.25 * 0.95
+    common_path_credit = 0.25 * (1.2 - 0.9)
+    assert isclose(hold_slack, -0.0925)
+    assert isclose(hold_slack + common_path_credit, -0.0175)
+    assert round(1000 + 3 * sqrt(50), 2) == 1021.21
     print("Variation: derated slack -3 ps, ideal coupled step 0.20 V")
 
 
