@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>5. Synthesis, standard-cell libraries, and RTL</title>
+<link rel="stylesheet" href="../assets/reader.css">
+<script defer src="../assets/math-config.js"></script><script defer src="../assets/mathjax-tex-svg.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar"><nav aria-label="Course navigation">
+  <a class="brand" href="../index.html">Advanced Logic Synthesis</a>
+  <a href="../source-map.html">Recordings</a>
+  <a href="../laboratory.html">Laboratory</a>
+</nav></header>
+<main id="main"><article><div class="chapter-meta">Recordings 12–15 <span>·</span> <a href="05-rtl-library.md">Markdown</a></div>
+<h1 id="5-synthesis-standard-cell-libraries-and-rtl">5. Synthesis, standard-cell libraries, and RTL</h1>
+<p>The execution slice now needs a mapped implementation. A synthesizer can select different arithmetic structures, share logic, and choose stronger cells. The design must still implement the agreed state transition, and the tools need characterized evidence before they can assign delay or power to the mapped result.</p>
+<h2 id="from-expression-to-library-instances-l12-1113">From expression to library instances <a href="https://www.youtube.com/watch?v=EculfHy8ZTQ&amp;t=673s">L12 11:13</a></h2>
+<p>Translation turns elaborated RTL into a technology-independent network. The network may contain abstract adders, multiplexers, registers, and gates. Logic optimization changes that network using identities and restructurings. <strong>Technology mapping</strong> covers its logic with instances that the target technology provides. Post-mapping optimization can then change cell size, swap functionally interchangeable pins when legal, or restructure a cone under timing, area, and electrical constraints.</p>
+<p>For the selection condition, let <span class="inline-math">\(a,b,c\)</span> be input bits and <span class="inline-math">\(m=ab+ac\)</span>. Factoring gives <span class="inline-math">\(m=a(b+c)\)</span>. In a purely two-input AND/OR basis, the original uses two AND gates and one OR, while the factored form uses one of each. Both implementations have two stages on at least one input path. The original <span class="inline-math">\(a\)</span> drives two gates and the factored <span class="inline-math">\(a\)</span> drives one. But which arc is critical depends on input arrival, inversion availability, and the library. A compound gate may cover the factored function with a single inverting cell plus a polarity correction. ABC demonstrates restructuring on an AND-inverter graph by sharing common logic and balancing depth, then evaluates the result after mapping. <a href="https://people.eecs.berkeley.edu/~alanmi/courses/2007_290N/papers/synthesis_berkeley_dac06.pdf">Mishchenko, Chatterjee, and Brayton, DAG-Aware AIG Rewriting</a></p>
+<p>A compile can succeed with multiple legal implementations. Compare mapped outputs against the same functional specification and measure timing at the same defined boundaries. Synthesis-time wire estimates can rank implementations differently from extracted layout. Keep placement and extracted-net analysis in the closure loop.</p>
+<h2 id="interpret-a-liberty-timing-table-l13-1225-l13-7227">Interpret a Liberty timing table <a href="https://www.youtube.com/watch?v=dqN3-Hd6s9M&amp;t=745s">L13 12:25</a> · <a href="https://www.youtube.com/watch?v=dqN3-Hd6s9M&amp;t=4347s">L13 72:27</a></h2>
+<p>A <strong>standard cell</strong> is a reusable implementation with coordinated views for function, timing, and layout. A Liberty timing view defines pins, Boolean functions, areas, timing arcs, operating conditions, and power information. A logic arc has a related input pin, an output pin, a timing sense, and possibly an enabling condition. For a NAND with the other input high, a rising input causes a falling output. That is a negative-unate arc. A positive-unate arc preserves transition direction, while a non-unate arc can respond in either direction depending on the other inputs. A register also has clock-to-output arcs, data-to-clock constraint arcs, and reset checks where applicable. Supply voltage, device process, and temperature define the characterization point.</p>
+<p>A nonlinear delay model, or NLDM, commonly stores cell delay and output transition in separate tables indexed by input slew and output capacitance. Let input slew <span class="inline-math">\(s\)</span> be measured in picoseconds and load <span class="inline-math">\(C\)</span> in femtofarads. Use this original table for one rising-output delay, in picoseconds:</p>
+<table>
+<thead>
+<tr>
+<th>Input slew</th>
+<th style="text-align: right;">5 fF</th>
+<th style="text-align: right;">15 fF</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10 ps</td>
+<td style="text-align: right;">20</td>
+<td style="text-align: right;">35</td>
+</tr>
+<tr>
+<td>50 ps</td>
+<td style="text-align: right;">30</td>
+<td style="text-align: right;">55</td>
+</tr>
+</tbody>
+</table>
+<p>At <span class="inline-math">\(s=20\)</span> ps and <span class="inline-math">\(C=11\)</span> fF the fractional positions are <span class="inline-math">\(u=(20-10)/(50-10)=0.25\)</span> and <span class="inline-math">\(v=(11-5)/(15-5)=0.60\)</span>. Interpolation across the load gives <span class="inline-math">\(29\)</span> ps at the lower slew and <span class="inline-math">\(45\)</span> ps at the upper slew. The interpolated value is <span class="inline-math">\((1-u)29+u(45)=33\)</span> ps. The same expression gives <span class="inline-math">\(20\)</span> ps at both lower endpoints, a useful axis-order check. Never swap the axes just because two templates use the same number of entries. A real output waveform can depend on distributed load and input shape. Current-source models retain more trajectory information than two scalar table inputs. Consult the library's templates, transition thresholds, and associated tool's interpolation and out-of-range behavior. <a href="https://people.eecs.berkeley.edu/~alanmi/publications/other/liberty07_03.pdf">Synopsys Liberty Reference Manual</a></p>
+<h2 id="write-the-intended-state-and-combinational-functions-l14-1637-l14-3955">Write the intended state and combinational functions <a href="https://www.youtube.com/watch?v=fbLERbbmGtY&amp;t=997s">L14 16:37</a> · <a href="https://www.youtube.com/watch?v=fbLERbbmGtY&amp;t=2395s">L14 39:55</a></h2>
+<p>Let <span class="inline-math">\(q_k\)</span> be the eight-bit result after clock edge <span class="inline-math">\(k\)</span>. Let <span class="inline-math">\(x,y,z\)</span> be unsigned eight-bit operands at the input, and <span class="inline-math">\(e\)</span> the write enable. The decoded match <span class="inline-math">\(ab\)</span> chooses <span class="inline-math">\(y\)</span> when true and <span class="inline-math">\(z\)</span> otherwise. When reset is asserted at the edge, set the result to zero. When reset is deasserted and <span class="inline-math">\(e=1\)</span>, set <span class="inline-math">\(q_{k+1}=(x+\operatorname{select}(ab,y,z))\bmod 256\)</span>. Otherwise <span class="inline-math">\(q_{k+1}=q_k\)</span>. Eight result bits therefore encode wraparound. An interface that also needs carry requires nine bits or explicit overflow output.</p>
+<p>Assign a value along every branch of a combinational process. An omitted branch asks the output to remember its old value, which can infer a latch. In an edge-triggered process, an omitted update under disabled enable is intentional retention of the register. Use nonblocking assignments for the clocked update so right-hand sides describe values before the edge. Reset semantics, assignment width, signedness, and literal sizing matter to both simulation and synthesis. For example, adding unsigned 250 and 20 into eight result bits gives 14. If a later comparator expects the full sum 270, widen the operands before the addition and keep the necessary high bit.</p>
+<p>Finite-state-machine encoding is a separate choice. One-hot storage uses a state bit for each encoded state, while binary storage uses enough bits to label the states. The simpler decode and higher bit count can trade area, delay, and switching. Define reset, default transition, and illegal-state behavior before relying on don't-care directives. The equality proof must apply to the intended reachable behavior and any explicitly required recovery behavior.</p>
+<h2 id="inspect-elaboration-and-directives-l15-0603-l15-1807">Inspect elaboration and directives <a href="https://www.youtube.com/watch?v=InEQiLrFf-w&amp;t=363s">L15 06:03</a> · <a href="https://www.youtube.com/watch?v=InEQiLrFf-w&amp;t=1087s">L15 18:07</a></h2>
+<p>Read/analyze, elaborate, link, and inspect the inferred storage before compile. For the execution slice the required result state is eight bits on one active edge, with a synchronous reset and an enable. If elaborate reports an asynchronous reset, inspect the sensitivity expression. If latch cells appear on the select output, inspect combinational control flow. Missing registers can reflect an unobserved result, a tied input, or unintended constant propagation. Reports are diagnostic evidence when compared with the state equation.</p>
+<p>Directives that assert case completeness or mutual exclusivity can change the legal input space considered by the implementation. For overlapping patterns, source order can define a priority that parallel inference may discard when the declared assumption is false. Preserve explicit priority or prove mutual exclusivity. Then verify the mapped behavior at the boundaries affected by the choice. <a href="https://www.youtube.com/watch?v=InEQiLrFf-w&amp;t=2896s">L15 48:16</a></p>
+<h2 id="laboratory-and-solved-problems">Laboratory and solved problems</h2>
+<p><code>python code/lab.py library</code> checks the four table corners, the 33 ps interpolation, and functional factoring. The <a href="../code/README.md">portable synthesis lab</a> builds the full slice.</p>
+<ol>
+<li><strong>Which library number predicts how long the following cell takes?</strong> First propagate the current arc's output slew from its transition table. Use that slew and the following cell's load to look up the following cell's delay. The present arc's delay advances arrival time, while its output slew supplies a separate table coordinate.</li>
+<li><strong>A combinational case leaves one select code unassigned. Why does simulation remember an old result?</strong> The procedure makes no assignment in that case, so the signal retains its previous value. Provide a defined default before entering the case if the result is intended to be combinational. Then check that the recovered default is allowed by the interface specification.</li>
+</ol></article>
+<nav class="pagination" aria-label="Chapters"><a rel="prev" href="04-first-flow.html">Previous chapter</a><a rel="next" href="06-constraints-compile.html">Next chapter</a></nav></main>
+</body>
+</html>

@@ -1,0 +1,45 @@
+# 5. Synthesis, standard-cell libraries, and RTL
+
+The execution slice now needs a mapped implementation. A synthesizer can select different arithmetic structures, share logic, and choose stronger cells. The design must still implement the agreed state transition, and the tools need characterized evidence before they can assign delay or power to the mapped result.
+
+## From expression to library instances [L12 11:13](https://www.youtube.com/watch?v=EculfHy8ZTQ&t=673s)
+
+Translation turns elaborated RTL into a technology-independent network. The network may contain abstract adders, multiplexers, registers, and gates. Logic optimization changes that network using identities and restructurings. **Technology mapping** covers its logic with instances that the target technology provides. Post-mapping optimization can then change cell size, swap functionally interchangeable pins when legal, or restructure a cone under timing, area, and electrical constraints.
+
+For the selection condition, let $a,b,c$ be input bits and $m=ab+ac$. Factoring gives $m=a(b+c)$. In a purely two-input AND/OR basis, the original uses two AND gates and one OR, while the factored form uses one of each. Both implementations have two stages on at least one input path. The original $a$ drives two gates and the factored $a$ drives one. But which arc is critical depends on input arrival, inversion availability, and the library. A compound gate may cover the factored function with a single inverting cell plus a polarity correction. ABC demonstrates restructuring on an AND-inverter graph by sharing common logic and balancing depth, then evaluates the result after mapping. [Mishchenko, Chatterjee, and Brayton, DAG-Aware AIG Rewriting](https://people.eecs.berkeley.edu/~alanmi/courses/2007_290N/papers/synthesis_berkeley_dac06.pdf)
+
+A compile can succeed with multiple legal implementations. Compare mapped outputs against the same functional specification and measure timing at the same defined boundaries. Synthesis-time wire estimates can rank implementations differently from extracted layout. Keep placement and extracted-net analysis in the closure loop.
+
+## Interpret a Liberty timing table [L13 12:25](https://www.youtube.com/watch?v=dqN3-Hd6s9M&t=745s) · [L13 72:27](https://www.youtube.com/watch?v=dqN3-Hd6s9M&t=4347s)
+
+A **standard cell** is a reusable implementation with coordinated views for function, timing, and layout. A Liberty timing view defines pins, Boolean functions, areas, timing arcs, operating conditions, and power information. A logic arc has a related input pin, an output pin, a timing sense, and possibly an enabling condition. For a NAND with the other input high, a rising input causes a falling output. That is a negative-unate arc. A positive-unate arc preserves transition direction, while a non-unate arc can respond in either direction depending on the other inputs. A register also has clock-to-output arcs, data-to-clock constraint arcs, and reset checks where applicable. Supply voltage, device process, and temperature define the characterization point.
+
+A nonlinear delay model, or NLDM, commonly stores cell delay and output transition in separate tables indexed by input slew and output capacitance. Let input slew $s$ be measured in picoseconds and load $C$ in femtofarads. Use this original table for one rising-output delay, in picoseconds:
+
+| Input slew | 5 fF | 15 fF |
+| --- | ---: | ---: |
+| 10 ps | 20 | 35 |
+| 50 ps | 30 | 55 |
+
+At $s=20$ ps and $C=11$ fF the fractional positions are $u=(20-10)/(50-10)=0.25$ and $v=(11-5)/(15-5)=0.60$. Interpolation across the load gives $29$ ps at the lower slew and $45$ ps at the upper slew. The interpolated value is $(1-u)29+u(45)=33$ ps. The same expression gives $20$ ps at both lower endpoints, a useful axis-order check. Never swap the axes just because two templates use the same number of entries. A real output waveform can depend on distributed load and input shape. Current-source models retain more trajectory information than two scalar table inputs. Consult the library's templates, transition thresholds, and associated tool's interpolation and out-of-range behavior. [Synopsys Liberty Reference Manual](https://people.eecs.berkeley.edu/~alanmi/publications/other/liberty07_03.pdf)
+
+## Write the intended state and combinational functions [L14 16:37](https://www.youtube.com/watch?v=fbLERbbmGtY&t=997s) · [L14 39:55](https://www.youtube.com/watch?v=fbLERbbmGtY&t=2395s)
+
+Let $q_k$ be the eight-bit result after clock edge $k$. Let $x,y,z$ be unsigned eight-bit operands at the input, and $e$ the write enable. The decoded match $ab$ chooses $y$ when true and $z$ otherwise. When reset is asserted at the edge, set the result to zero. When reset is deasserted and $e=1$, set $q_{k+1}=(x+\operatorname{select}(ab,y,z))\bmod 256$. Otherwise $q_{k+1}=q_k$. Eight result bits therefore encode wraparound. An interface that also needs carry requires nine bits or explicit overflow output.
+
+Assign a value along every branch of a combinational process. An omitted branch asks the output to remember its old value, which can infer a latch. In an edge-triggered process, an omitted update under disabled enable is intentional retention of the register. Use nonblocking assignments for the clocked update so right-hand sides describe values before the edge. Reset semantics, assignment width, signedness, and literal sizing matter to both simulation and synthesis. For example, adding unsigned 250 and 20 into eight result bits gives 14. If a later comparator expects the full sum 270, widen the operands before the addition and keep the necessary high bit.
+
+Finite-state-machine encoding is a separate choice. One-hot storage uses a state bit for each encoded state, while binary storage uses enough bits to label the states. The simpler decode and higher bit count can trade area, delay, and switching. Define reset, default transition, and illegal-state behavior before relying on don't-care directives. The equality proof must apply to the intended reachable behavior and any explicitly required recovery behavior.
+
+## Inspect elaboration and directives [L15 06:03](https://www.youtube.com/watch?v=InEQiLrFf-w&t=363s) · [L15 18:07](https://www.youtube.com/watch?v=InEQiLrFf-w&t=1087s)
+
+Read/analyze, elaborate, link, and inspect the inferred storage before compile. For the execution slice the required result state is eight bits on one active edge, with a synchronous reset and an enable. If elaborate reports an asynchronous reset, inspect the sensitivity expression. If latch cells appear on the select output, inspect combinational control flow. Missing registers can reflect an unobserved result, a tied input, or unintended constant propagation. Reports are diagnostic evidence when compared with the state equation.
+
+Directives that assert case completeness or mutual exclusivity can change the legal input space considered by the implementation. For overlapping patterns, source order can define a priority that parallel inference may discard when the declared assumption is false. Preserve explicit priority or prove mutual exclusivity. Then verify the mapped behavior at the boundaries affected by the choice. [L15 48:16](https://www.youtube.com/watch?v=InEQiLrFf-w&t=2896s)
+
+## Laboratory and solved problems
+
+`python code/lab.py library` checks the four table corners, the 33 ps interpolation, and functional factoring. The [portable synthesis lab](../code/README.md) builds the full slice.
+
+1. **Which library number predicts how long the following cell takes?** First propagate the current arc's output slew from its transition table. Use that slew and the following cell's load to look up the following cell's delay. The present arc's delay advances arrival time, while its output slew supplies a separate table coordinate.
+2. **A combinational case leaves one select code unassigned. Why does simulation remember an old result?** The procedure makes no assignment in that case, so the signal retains its previous value. Provide a defined default before entering the case if the result is intended to be combinational. Then check that the recovered default is allowed by the interface specification.

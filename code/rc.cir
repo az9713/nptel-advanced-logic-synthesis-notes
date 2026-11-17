@@ -1,0 +1,7 @@
+* Original first-order model of a falling output node.
+Rout out 0 2k
+Cout out 0 20f ic=0.8
+.tran 0.05p 240p uic
+.meas tran t50 when v(out)=0.4 fall=1
+.meas tran slew trig v(out) val=0.72 fall=1 targ v(out) val=0.08 fall=1
+.end

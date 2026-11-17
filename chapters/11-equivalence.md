@@ -1,0 +1,31 @@
+# 11. Equivalence checking from RTL through mapped logic
+
+The execution slice passes synthesis and timing. Moving the selector after the adder could have changed overflow behavior or reset priority. A proof should compare observed results for all inputs and state situations allowed by the contract and produce a concrete discrepancy when the implementations disagree.
+
+## Match behavior and construct a miter [L34 08:03](https://www.youtube.com/watch?v=LfqNlRfpVWo&t=483s) · [L34 16:05](https://www.youtube.com/watch?v=LfqNlRfpVWo&t=965s)
+
+Call the specification the **reference** and the transformed design the **implementation**. A matching phase identifies comparable boundaries and points, such as corresponding inputs, outputs, and registers. For combinational models, drive both with the same input vector $x$ and let $r_j(x)$ and $i_j(x)$ denote Boolean values of output bit $j$. The **miter** is the Boolean mismatch signal
+
+$$
+m(x)=\bigvee_j\bigl(r_j(x)\oplus i_j(x)\bigr).
+$$
+
+The disjunction is true exactly when some output bit differs. A Boolean satisfiability (SAT) solver asks whether there exists an allowed input with $m(x)=1$. An unsatisfiable query proves the modeled equality for every allowed input. A satisfiable query produces a counterexample. A timeout leaves the proof unresolved. Validate the correspondence, assumptions, and meanings of undefined bits before claiming equality for the hardware interface. [Yosys model checking](https://github.com/YosysHQ/yosys/blob/main/docs/source/using_yosys/more_scripting/model_checking.rst?plain=true)
+
+For the slice, let $s=ab$ and suppose a refactor changes $x+(s?y:z)$ to $s?(x+y):(x+z)$, preserving eight-bit unsigned wraparound. When $s=0$, both branches give $(x+z)\bmod256$. When $s=1$, both give $(x+y)\bmod256$. This is a symbolic proof by cases for the combinational next-value expression. If the refactor reverses the select polarity, the input $a=b=1$, $x=9$, $y=4$, $z=7$ gives reference result 13 and implementation result 16. Choose a write-enabled, reset-deasserted edge to observe the difference in registered output.
+
+## Preserve the sequential contract [L34 32:04](https://www.youtube.com/watch?v=LfqNlRfpVWo&t=1924s) · [L34 47:55](https://www.youtube.com/watch?v=LfqNlRfpVWo&t=2875s)
+
+Sequential equivalence compares input/output traces with explicit initial-state and clock assumptions. With corresponding identical state encodings, proving equal output and equal next-state functions from every common state, together with equivalent reset states, gives a direct induction. The reset establishes agreement at the base. Matching next-state functions preserve it at the next edge for any shared input. The proof then holds for every finite number of subsequent edges. Equality over all common states can be stronger than necessary. A proof may instead work over reachable states and a justified correspondence.
+
+Retiming moves registers through combinational logic while respecting the modeled sequential behavior. Register names or positions can then differ, so one-to-one state matching can be insufficient. A relation over paired states must connect initial states, imply equality of observed outputs, and be preserved by joint evolution. A short unrolling examines only traces of the specified length unless supplemented by a proof of induction or a complete reachability argument. [Leiserson and Saxe, Retiming Synchronous Circuitry](https://www.cs.columbia.edu/~cs6861/handouts/leiserson-algorithmica-88.pdf)
+
+Practical checking needs explicit treatment of identical memory macros, black boxes, clock gates, scan mode, reset, and unknown values. For example, abstracting a memory as a matched black box can prove the surrounding logic conditional on compatible macro behavior. It gives no proof of the macro implementation itself. Synthesis guidance can help a commercial equivalence tool recover transformations and match compare points. It does not by itself establish functional equality. Inspect unmatched points, failing compare points, and inconclusive points separately. [L34 55:35](https://www.youtube.com/watch?v=LfqNlRfpVWo&t=3335s) · [L34 62:58](https://www.youtube.com/watch?v=LfqNlRfpVWo&t=3778s)
+
+## Laboratory and solved problems
+
+`python code/lab.py equivalence` checks all control combinations over a selected operand grid and representative states. The [Yosys lab](../code/README.md) checks the mapped slice against its starting RTL, proves the combinational relocation for all defined eight-bit operands, and obtains the 13-versus-16 counterexample for the reversed selector. The numerical check and the tool proof cover a digital model. The setup, hold, parasitic, and variation checks from Chapters 8–10 are separate implementation obligations.
+
+1. **How can four cycles of correct simulation miss a discrepancy?** An implementation could have a hidden counter that corrupts the fifth write. Four cycles cannot reach the bug. A bounded proof up to four cycles also permits this behavior. Induction with a valid state relation or a reachability proof can establish a result independent of the trace length.
+2. **Give a counterexample to an enable-first reset priority.** Choose previous state 26, reset asserted, and enable deasserted. Reference reset priority gives the next result zero. The implementation that checks enable first and otherwise holds gives 26. The mismatch is observable after the edge under the required reset contract.
+3. **Does a clean timing report settle the issue?** Timing measures whether modeled transitions satisfy deadlines and stability checks. The reversed selector can have the same timing properties while computing a different result. Proof of behavior and timing verification discharge different parts of the same hardware contract.

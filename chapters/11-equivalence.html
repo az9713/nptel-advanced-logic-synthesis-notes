@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>11. Equivalence checking from RTL through mapped logic</title>
+<link rel="stylesheet" href="../assets/reader.css">
+<script defer src="../assets/math-config.js"></script><script defer src="../assets/mathjax-tex-svg.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar"><nav aria-label="Course navigation">
+  <a class="brand" href="../index.html">Advanced Logic Synthesis</a>
+  <a href="../source-map.html">Recordings</a>
+  <a href="../laboratory.html">Laboratory</a>
+</nav></header>
+<main id="main"><article><div class="chapter-meta">Recording 34 <span>·</span> <a href="11-equivalence.md">Markdown</a></div>
+<h1 id="11-equivalence-checking-from-rtl-through-mapped-logic">11. Equivalence checking from RTL through mapped logic</h1>
+<p>The execution slice passes synthesis and timing. Moving the selector after the adder could have changed overflow behavior or reset priority. A proof should compare observed results for all inputs and state situations allowed by the contract and produce a concrete discrepancy when the implementations disagree.</p>
+<h2 id="match-behavior-and-construct-a-miter-l34-0803-l34-1605">Match behavior and construct a miter <a href="https://www.youtube.com/watch?v=LfqNlRfpVWo&amp;t=483s">L34 08:03</a> · <a href="https://www.youtube.com/watch?v=LfqNlRfpVWo&amp;t=965s">L34 16:05</a></h2>
+<p>Call the specification the <strong>reference</strong> and the transformed design the <strong>implementation</strong>. A matching phase identifies comparable boundaries and points, such as corresponding inputs, outputs, and registers. For combinational models, drive both with the same input vector <span class="inline-math">\(x\)</span> and let <span class="inline-math">\(r_j(x)\)</span> and <span class="inline-math">\(i_j(x)\)</span> denote Boolean values of output bit <span class="inline-math">\(j\)</span>. The <strong>miter</strong> is the Boolean mismatch signal</p>
+<div class="display-math">\[m(x)=\bigvee_j\bigl(r_j(x)\oplus i_j(x)\bigr).\]</div>
+<p>The disjunction is true exactly when some output bit differs. A Boolean satisfiability (SAT) solver asks whether there exists an allowed input with <span class="inline-math">\(m(x)=1\)</span>. An unsatisfiable query proves the modeled equality for every allowed input. A satisfiable query produces a counterexample. A timeout leaves the proof unresolved. Validate the correspondence, assumptions, and meanings of undefined bits before claiming equality for the hardware interface. <a href="https://github.com/YosysHQ/yosys/blob/main/docs/source/using_yosys/more_scripting/model_checking.rst?plain=true">Yosys model checking</a></p>
+<p>For the slice, let <span class="inline-math">\(s=ab\)</span> and suppose a refactor changes <span class="inline-math">\(x+(s?y:z)\)</span> to <span class="inline-math">\(s?(x+y):(x+z)\)</span>, preserving eight-bit unsigned wraparound. When <span class="inline-math">\(s=0\)</span>, both branches give <span class="inline-math">\((x+z)\bmod256\)</span>. When <span class="inline-math">\(s=1\)</span>, both give <span class="inline-math">\((x+y)\bmod256\)</span>. This is a symbolic proof by cases for the combinational next-value expression. If the refactor reverses the select polarity, the input <span class="inline-math">\(a=b=1\)</span>, <span class="inline-math">\(x=9\)</span>, <span class="inline-math">\(y=4\)</span>, <span class="inline-math">\(z=7\)</span> gives reference result 13 and implementation result 16. Choose a write-enabled, reset-deasserted edge to observe the difference in registered output.</p>
+<h2 id="preserve-the-sequential-contract-l34-3204-l34-4755">Preserve the sequential contract <a href="https://www.youtube.com/watch?v=LfqNlRfpVWo&amp;t=1924s">L34 32:04</a> · <a href="https://www.youtube.com/watch?v=LfqNlRfpVWo&amp;t=2875s">L34 47:55</a></h2>
+<p>Sequential equivalence compares input/output traces with explicit initial-state and clock assumptions. With corresponding identical state encodings, proving equal output and equal next-state functions from every common state, together with equivalent reset states, gives a direct induction. The reset establishes agreement at the base. Matching next-state functions preserve it at the next edge for any shared input. The proof then holds for every finite number of subsequent edges. Equality over all common states can be stronger than necessary. A proof may instead work over reachable states and a justified correspondence.</p>
+<p>Retiming moves registers through combinational logic while respecting the modeled sequential behavior. Register names or positions can then differ, so one-to-one state matching can be insufficient. A relation over paired states must connect initial states, imply equality of observed outputs, and be preserved by joint evolution. A short unrolling examines only traces of the specified length unless supplemented by a proof of induction or a complete reachability argument. <a href="https://www.cs.columbia.edu/~cs6861/handouts/leiserson-algorithmica-88.pdf">Leiserson and Saxe, Retiming Synchronous Circuitry</a></p>
+<p>Practical checking needs explicit treatment of identical memory macros, black boxes, clock gates, scan mode, reset, and unknown values. For example, abstracting a memory as a matched black box can prove the surrounding logic conditional on compatible macro behavior. It gives no proof of the macro implementation itself. Synthesis guidance can help a commercial equivalence tool recover transformations and match compare points. It does not by itself establish functional equality. Inspect unmatched points, failing compare points, and inconclusive points separately. <a href="https://www.youtube.com/watch?v=LfqNlRfpVWo&amp;t=3335s">L34 55:35</a> · <a href="https://www.youtube.com/watch?v=LfqNlRfpVWo&amp;t=3778s">L34 62:58</a></p>
+<h2 id="laboratory-and-solved-problems">Laboratory and solved problems</h2>
+<p><code>python code/lab.py equivalence</code> checks all control combinations over a selected operand grid and representative states. The <a href="../code/README.md">Yosys lab</a> checks the mapped slice against its starting RTL, proves the combinational relocation for all defined eight-bit operands, and obtains the 13-versus-16 counterexample for the reversed selector. The numerical check and the tool proof cover a digital model. The setup, hold, parasitic, and variation checks from Chapters 8–10 are separate implementation obligations.</p>
+<ol>
+<li><strong>How can four cycles of correct simulation miss a discrepancy?</strong> An implementation could have a hidden counter that corrupts the fifth write. Four cycles cannot reach the bug. A bounded proof up to four cycles also permits this behavior. Induction with a valid state relation or a reachability proof can establish a result independent of the trace length.</li>
+<li><strong>Give a counterexample to an enable-first reset priority.</strong> Choose previous state 26, reset asserted, and enable deasserted. Reference reset priority gives the next result zero. The implementation that checks enable first and otherwise holds gives 26. The mismatch is observable after the edge under the required reset contract.</li>
+<li><strong>Does a clean timing report settle the issue?</strong> Timing measures whether modeled transitions satisfy deadlines and stability checks. The reversed selector can have the same timing properties while computing a different result. Proof of behavior and timing verification discharge different parts of the same hardware contract.</li>
+</ol></article>
+<nav class="pagination" aria-label="Chapters"><a rel="prev" href="10-variation-noise.html">Previous chapter</a><a rel="next" href="../laboratory.html">Laboratory</a></nav></main>
+</body>
+</html>

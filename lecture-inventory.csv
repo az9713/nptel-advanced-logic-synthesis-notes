@@ -1,0 +1,35 @@
+index,title,video_id,duration_s,language,transcript_source,caption_end_s,sha256
+1,MOS Transistor,WBa2Fw5-yU4,2386,en,YouTube en-orig,2388.0,1e25d7452b1fd7fcb14e27b1b3f67da9fb17383086d96d2f2e7eeb274c24f7e0
+2,MOS Transistor - Detailed Study,R-mMcqMXqmk,5196,en,YouTube en-orig,5190.8,cb3cecc38290e2a7d72b323704a2da93a25d32abebe306bf77bc5657da9cdf8b
+3,Combinational Circuits & layout,EK3Q3donQeQ,3870,en,YouTube en-orig,3871.4,4c07c57e524ebcc2abc4d378c14feeaf97895bc138195123957c907cc7c31dee
+4,Delay,_1pBznDWZMg,3925,en,YouTube en-orig,3923.2,4dccfb71bdfaa615b2690185f1cfab01f83be85ecae68516b654ffa67b096a04
+5,Sequential Circuits,Yo_ttSD6o-k,3674,en,YouTube en,3675.7,e385b43b801a6df031d47f90c30300d75f695f02ad6966fd6cb30b87da05d451
+6,Logical Effort,KAk91n5nTgg,3576,en,YouTube en-orig,3575.8,cecf3f1b673c32435aedbfd13ed326587311c302b724b85ac494b520a349082d
+7,Circuit Families,zdr5G-JA_LE,3482,en,YouTube en-orig,3477.8,b79301f3061f768118304016395382b72597704b90f696c98f7032aa976aa6eb
+8,Lab-01,64MT8293aqU,3238,en,YouTube en-orig,3240.0,afdee2070749bf8e07550ecbbc905326a0d043ce17d93036a8dccd809739c247
+9,Lab-02,WhPKoE1mZRU,3705,en,YouTube en-orig,3704.5,8a36ac0af44e85de8eef2d664ebe6cb21efddf7bb0bff3e4bcb3ec66a5b90986
+10,Lab-03,XAXlDwBIrHE,3707,en,YouTube en-orig,3705.6,29304300aff3cf4642b414b95b611e8ab2f0ad182fb87e21844f1339fa87e745
+11,Lab-04,CdlqGtuwu2A,4954,en,YouTube en-orig,4947.5,b5b6b4dd51720f8d1a976df30097b678af5be3e6f2df73b124b99698277b2346
+12,Introduction to Synthesis,EculfHy8ZTQ,3237,en,YouTube en-orig,3235.1,6d1994f0e385a462bc27ad168eea4ca87a192d7a0305917172a03c87de5223e3
+13,Libraries,dqN3-Hd6s9M,7125,en,YouTube en-orig,7122.1,f2d95ead0492a41aebf6f02b7fdd098813d14b29def68453ae11e5cb632c40be
+14,RTL Coding for Synthesis,fbLERbbmGtY,3389,en,YouTube en-orig,3381.6,a64047bd41dbb8059d947d9b8ced7107b89aae58e3b55708bab389321c576f71
+15,Reading Design in DC,InEQiLrFf-w,3683,en,YouTube en-orig,3679.0,a6e195d9de06e9e1773984a6966ace58d4f222f3be849a8d19a8d9e169aaf675
+16,Design Environment,7yRJREMrl3s,3564,en,YouTube en-orig,3566.0,615aa7ad8966b73b6aef73a61f891fb844ddba41ba4457459fdf0aeefe76c939
+17,Design Constraints,_ewT68b8gLk,3639,en,YouTube en-orig,3639.6,8300ffcfbb4a73ca335957a6341d17f12938f59bbad4617571cfa0f24ec76653
+18,Compile Flow and stratergies,PA5KzTcLIhQ,4024,en,YouTube en-orig,4022.0,9fd844430943b2876933df3e8734f29e31bf1a82fde4cb7864eae415bb2d5480
+19,Analysis and Reporting,sWmMCh-bRFo,3411,en,YouTube en-orig,3408.8,3558fe6f20dacd2b29524d7396e8af46b0ccc65cce667691e095781d60486138
+20,Lab-05,_QIncrpuLJ0,3460,en,YouTube en-orig,3460.1,e76033fed207bf9016244b665eb51141ec470f33123286adfe44416e550b49d3
+21,Advanced Synthesis Techniques,ITRaUj7AqLM,3260,en,YouTube en-orig,3259.9,c05e93ebd07d7a704ba544480d3b8f3d2555cf880c0140efc62c6719d3ec8062
+22,Datapath Extraction Guidelines,-3-bqspGmFo,3250,en,Local Whisper small.en,3244.8,7a48fd8c800a79a62a565dd32f0f61afcd9dbf3b77e5a65a4997b30e28c7fee0
+23,Power - Methodology and Analysis,0tr81951TNE,5817,en,YouTube en-orig,5813.3,8f8d7d975ffa0737fe5fdf97ecc0173fbd417a81786d661f7bd4477c96ecaa1c
+24,Lab-06,kuHtC1LuKso,3505,en,Local Whisper small.en,3501.4,011066cfdae53ec9d711c099c46822eec4f4201a4ff6a8fb613b6a363e29f21a
+25,Lab-07,RpNbQDah6MM,5906,en,YouTube en-orig,5904.4,442d65fb31c581b994d459a2d2895bf0a735b9865a25a5f45c90017bdbfc9afb
+26,Lab-08,r4j0wv_dDyw,4164,en,YouTube en-orig,4162.4,51ce19e7e62ae28f31d54aa9d80f454dec251440c726ceee3098372aa26157a3
+27,Lab-09,hcrQYacN3IY,3377,en,YouTube en-orig,3374.9,7bbb2a9d7d3868b2a0e496bdd3e743679dc139833e9a19cbd3d1dc690cbc252c
+28,Static Timing Analysis - Concepts and Flow,Vo5VS5rJtyU,4745,en,YouTube en-orig,4743.4,4fc2e82e80e094df672bbb5be6a7746187b332ad5fdf1712d0f62d46985ea8e6
+29,Interconnects and Delay calculation,A9vzgrr-9Gc,3739,en,YouTube en-orig,3737.8,ad4495dff716957361c8af71631ba99f9ddb571ea376968a7960f511049c75f5
+30,Clock and Exceptions,X5vbEFgNqEs,5444,en,YouTube en-orig,5441.6,720e5c6a38f6a2d744f4bbbaf5a6295afd3cf6ffce80f57cf7ed3108cf0af4d8
+31,On Chip Variation,5wIeE_opcpc,3627,en,Local Whisper small.en,3623.1,445ac639216476de7532adb7939fd129c8a7a33b9bbaa73a1a697497d8c3b2f8
+32,Introduction to Crosstalk,Qrws47HNrGs,3612,en,YouTube en-orig,3599.0,06f3770cba20d868ab05aa37cfdad90458a8da02acec4af74310234d7269031c
+33,Gaussian / Normal Distribution,fqSYBdIG4RM,2876,en,YouTube en-orig,2873.0,fb07a55881f47f253a6f710d28043662ce3fce15b2b256479fc8108fa5f2d8c6
+34,Equivalence Checking / Formal Verification,LfqNlRfpVWo,4728,en,YouTube en-orig,4725.2,68c46eea075d36912224a016d2d6255fe77a87fd1db8525f11452d27bb0cea22

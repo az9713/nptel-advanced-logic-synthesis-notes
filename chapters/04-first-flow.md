@@ -1,0 +1,34 @@
+# 4. First synthesis flow through four labs
+
+Run the execution slice through synthesis twice with an identical environment. If the second run uses a different top, treats an unresolved module as a black box, or omits an external delay, a better timing report is incomparable. Preserve the inputs needed to reproduce what each run actually builds and measures.
+
+## Lab 01 · Resolve libraries and elaborate the top [L08 12:01](https://www.youtube.com/watch?v=64MT8293aqU&t=721s) · [L08 28:02](https://www.youtube.com/watch?v=64MT8293aqU&t=1682s)
+
+A **target library** supplies technology cells the mapper may choose. A **link library** supplies definitions that resolve instantiated references, including already mapped blocks and memory macros as applicable. A library defining a macro for linking need never make the macro a candidate for arbitrary logic mapping. In the course's Design Compiler (DC) flow, analyze the RTL sources, elaborate the named top with the intended parameters, and link. RTL, or register-transfer level description, defines state updates and combinational functions in a hardware description language. Elaboration expands parameterized hierarchy and infers objects such as multiplexers and registers. Linking binds a referenced name to its definition.
+
+Make a table of expected top ports, source files, parameters, registers, and deliberately modeled black boxes. For a slice with a one-bit enable and eight-bit result, state that you expect eight result state bits. An eight-bit bank can appear as a single multi-bit RTL object or several cells, depending on representation. Count bits and inspect clock/reset attributes. An unintended latch means some combinational assignment retained its previous value. Fix that mechanism before comparing mapped timing. For the library used in the lab, inspect the operating condition, input capacitance, rise/fall measurement thresholds, load/slew axes, and sequential timing arcs before running any optimization.
+
+## Lab 02 · Set electrical and timing assumptions [L09 16:00](https://www.youtube.com/watch?v=WhPKoE1mZRU&t=960s) · [L09 44:15](https://www.youtube.com/watch?v=WhPKoE1mZRU&t=2655s)
+
+Check the design after linking. Investigate missing references, multiple drivers, dangling inputs, constant outputs, and warnings about clock or reset. A tied input can express intentional mode selection. A missing reference usually invalidates compilation or limits what is proved about that hierarchy. Record a reason for any intentionally waived diagnostic.
+
+Specify the operating condition, input transition or driving cell, output capacitance, clock, and input and output time budgets. The input driver's waveform and output load affect cell delays. The input delay and output delay express when external logic can supply inputs and how much time downstream logic needs. For example, a $1.0$ ns cycle with data arriving $0.18$ ns after the reference edge and requiring an output $0.22$ ns before the next edge leaves $0.60$ ns for a direct input-to-output path in the block, before any additional uncertainty. Applying both time budgets correctly matters more than the raw cell count. Check that every object query selects the expected ports and that the reference clock is intentional.
+
+## Lab 03 · Read the mapped netlist and its reports [L10 05:58](https://www.youtube.com/watch?v=XAXlDwBIrHE&t=358s) · [L10 31:37](https://www.youtube.com/watch?v=XAXlDwBIrHE&t=1897s)
+
+Save the mapped netlist, constraint snapshot, log, library identity, and reports together. Review references for unresolved, abstract, or unexpected elements. A pin count, net count, reference count, and area each answer different questions. Cell area is the sum of mapped instance areas under the library's conventions. Placement utilization and routed area require additional physical information.
+
+Treat each timing report as a calculation with a startpoint, endpoint, clock edges, launch conditions, cell and net increments, and a required time. For the budget above, an observed $0.64$ ns block path arrives at $0.82$ ns relative to launch. Its required arrival is $0.78$ ns, yielding $-0.04$ ns setup slack. If the report instead shows positive slack, inspect path group, edge, and constraint coverage. Unconstrained paths can disappear from meaningful worst-slack comparisons. Keep port-to-port, port-to-register, register-to-register, and register-to-port groups explicit.
+
+## Lab 04 · Diagnose path priorities and compile choices [L11 16:22](https://www.youtube.com/watch?v=CdlqGtuwu2A&t=982s) · [L11 48:35](https://www.youtube.com/watch?v=CdlqGtuwu2A&t=2915s)
+
+Suppose the execution slice's register-to-register datapath has $-0.02$ ns slack but one interface path shows $-0.40$ ns because of an incorrect external delay. Optimizing harder against the broken budget consumes area and run time. Correct the interface contract first. Path groups can direct effort toward genuine priorities once the constraint set is credible. A group weight and critical range influence optimization effort and candidate paths in the course's flow. They do not add time to a path.
+
+Datapath operators may map through an implementation library such as DesignWare. Check what was inferred and what implementation appeared in the resulting netlist. For example, a top-level latency obligation cannot be inferred from a generic adder reference count. Flattening and boundary optimization expose opportunities across hierarchy and can change names used in constraints and equivalence setup. Compare two runs with the same clocks, libraries, boundary delays, and report filters while changing one compile choice. Inspect area, setup, hold, electrical violations, and equivalence evidence.
+
+## Laboratory and solved problems
+
+The [portable synthesis lab](../code/README.md) elaborates and synthesizes an original execution slice with Yosys. It records eight result state bits and checks the mapping against the starting RTL. The NPTEL labs use licensed tools and design files specific to their recordings. The portable exercise uses the same checkpoints with an independent design and tool. [Yosys synthesis documentation](https://github.com/YosysHQ/yosys/blob/main/docs/source/using_yosys/synthesis/synth.rst)
+
+1. **A memory is recognized, but no timing arcs reach its outputs. What should you inspect?** Confirm the instance links to the correct timing view, the clock and output pins match the netlist, and the view models the active mode. A successful parse or recognizable module name alone gives no output timing bound.
+2. **WNS improves after a compile-option experiment and the checked endpoint count falls. Is the change meaningful?** Worst negative slack (WNS) summarizes the worst setup deficit under the analyzed path set. Compare constrained endpoints and clocks first. Recompute both runs with a common coverage criterion, then inspect how the original failing path changed.

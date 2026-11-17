@@ -1,0 +1,34 @@
+# Run from the course directory. Netlist and reports go under work/.
+read_verilog code/slice.v
+hierarchy -check -top execution_slice
+proc
+opt
+check -assert
+stat
+rename execution_slice gold
+design -stash original
+
+read_verilog code/slice.v
+synth -top execution_slice
+check -assert
+stat
+write_verilog -noattr work/execution_slice_mapped.v
+rename execution_slice impl
+design -copy-from original gold
+design -save paired
+equiv_make gold impl equiv
+hierarchy -top equiv
+equiv_simple -seq 2
+equiv_induct -seq 2
+equiv_status -assert
+
+design -load paired
+miter -equiv -flatten gold impl reset_miter
+hierarchy -top reset_miter
+sat -verify -seq 3 -set-at 1 in_reset 1 -set-def-inputs -prove-skip 1 -prove trigger 0 reset_miter
+
+design -reset
+read_verilog code/slice.v
+hierarchy -top selection_miter
+sat -verify -prove equivalent_rewrite_diff 0 -set-def-inputs selection_miter
+sat -falsify -prove reversed_diff 0 -set a 1 -set b 1 -set x 9 -set y 4 -set z 7 -show reference_value,reversed_value,reversed_diff selection_miter

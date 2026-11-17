@@ -1,0 +1,14 @@
+/work/
+/README.txt
+/tools/captions.py
+/tools/transcribe_audio.py
+/_site/
+*.json3
+*.srt
+*.vtt
+*.mp4
+*.webm
+*.m4a
+*.mp3
+*.wav
+__pycache__/

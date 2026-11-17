@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Computational laboratory</title>
+<link rel="stylesheet" href="assets/reader.css">
+
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar"><nav aria-label="Course navigation">
+  <a class="brand" href="index.html">Advanced Logic Synthesis</a>
+  <a href="source-map.html">Recordings</a>
+  <a href="laboratory.html">Laboratory</a>
+</nav></header>
+<main id="main"><article><h1 id="computational-laboratory">Computational laboratory</h1>
+<p>From the course directory, <code>python code/lab.py all</code> runs the ten deterministic model checks. The program takes only a lab name, prints the main results, and exits on a failed assertion. Its circuit models use invented parameters for explanatory purposes.</p>
+<p><code>ngspice -b code/rc.cir</code> independently simulates the RC transient from Chapter 2. The capacitor starts at 0.8 V. The measurements check the 0.4 V crossing and the time between 0.72 V and 0.08 V. Compare the measured values with 27.73 ps and 87.89 ps. The deck is a linear circuit, so it excludes MOS slew dependence and device parasitics.</p>
+<p>For the synthesis and equivalence exercises, run <code>yosys -s code/synthesis.ys</code> with Yosys on the path and a <code>work/</code> folder in the course directory. The same script runs with <code>yowasp-yosys</code> when using the WebAssembly build. It checks the elaborated design, maps to Yosys generic gates, and writes <code>work/execution_slice_mapped.v</code>. It then checks the eight matched output bits by induction and verifies the starting post-reset steps with a sequential miter. Finally it proves the selector relocation combinationally and obtains a 13-versus-16 counterexample for the reversed selector. The state contract and reset argument appear in Chapter 11. This generic-gate exercise supplies no characterized cell delays or physical parasitics.</p>
+<p><a href="https://github.com/YosysHQ/yosys/blob/main/docs/source/using_yosys/synthesis/synth.rst">Yosys synthesis</a> · <a href="https://github.com/YosysHQ/yosys/blob/main/docs/source/using_yosys/more_scripting/model_checking.rst">Yosys model checking</a> · <a href="https://ngspice.sourceforge.io/">ngspice project</a></p><ul class="downloads"><li><a href="code/lab.py">Python model checks</a></li><li><a href="code/rc.cir">ngspice RC deck</a></li><li><a href="code/slice.v">Verilog source</a></li><li><a href="code/synthesis.ys">Yosys script</a></li></ul></article></main>
+</body>
+</html>
